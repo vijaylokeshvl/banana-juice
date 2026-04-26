@@ -2,6 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,12 +12,47 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Use /tmp for database when running on Vercel
+const dbPath = process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, 'database.sqlite');
+
 // Database connection
-const db = new sqlite3.Database('./database.sqlite', (err) => {
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database', err.message);
     } else {
         console.log('Connected to the SQLite database.');
+        
+        // Initialize tables (especially important for Vercel's ephemeral /tmp storage)
+        db.serialize(() => {
+            db.run(`CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                flavor TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price REAL NOT NULL,
+                image TEXT NOT NULL,
+                badge TEXT
+            )`);
+
+            db.run(`CREATE TABLE IF NOT EXISTS cart_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER,
+                quantity INTEGER,
+                FOREIGN KEY(product_id) REFERENCES products(id)
+            )`);
+
+            // Seed products if empty
+            db.get("SELECT COUNT(*) as count FROM products", (err, row) => {
+                if (row && row.count === 0) {
+                    const stmt = db.prepare("INSERT INTO products (name, flavor, description, price, image, badge) VALUES (?, ?, ?, ?, ?, ?)");
+                    stmt.run("Banana Bliss", "banana", "Creamy, potassium-rich banana juice blended with a hint of honey.", 4.99, "fruit3.png", "Best Seller");
+                    stmt.run("Orange Splash", "mango", "Freshly squeezed oranges, bursting with Vitamin C and citrus zest.", 5.49, "fruit1.png", "Popular");
+                    stmt.run("Coconut Cool", "green", "Natural electrolytes and refreshing coconut water straight from the grove.", 5.99, "fruit2.png", null);
+                    stmt.run("Masala Magic", "berry", "A traditional Indian blend of spices and fresh fruit for an exotic kick.", 6.49, "fruit4.png", "New");
+                    stmt.finalize();
+                }
+            });
+        });
     }
 });
 
@@ -112,7 +148,12 @@ app.post('/api/checkout', (req, res) => {
     });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Export for Vercel serverless functions
+module.exports = app;
+
+// Start server locally
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}

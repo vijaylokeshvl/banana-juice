@@ -13,5 +13,10 @@
     "@astrojs/sitemap": "^1.0.0",
     "@netlify/netlify-marketing-tokens": "^1.1.0",
     "astro": "^2.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sqlite3": "^6.0.1"
   }
 }
