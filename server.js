@@ -20,9 +20,9 @@ app.use(cors());
 app.use(express.json());
 
 // Use /tmp for database when running on Vercel
-const dbPath = process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, '..', 'database.sqlite');
+const dbPath = process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, 'database.sqlite');
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
