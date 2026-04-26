@@ -169,6 +169,11 @@ app.post('/api/checkout', (req, res) => {
     });
 });
 
+// Catch-all route to serve index.html for any other requests
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Export for Vercel serverless functions
 module.exports = app;
 
