@@ -4,16 +4,37 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
+// Error handling for Vercel
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Use /tmp for database when running on Vercel
-const dbPath = process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, 'database.sqlite');
+const dbPath = process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, '..', 'database.sqlite');
+
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        message: 'Server is running',
+        environment: process.env.VERCEL ? 'vercel' : 'local',
+        dbPath: dbPath
+    });
+});
+
+
 
 // Database connection
 const db = new sqlite3.Database(dbPath, (err) => {
