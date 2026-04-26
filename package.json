@@ -1,18 +1,17 @@
 {
-  "name": "3d-website",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@example/starter",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "sqlite3": "^6.0.1"
+  "devDependencies": {
+    "@astrojs/preact": "^1.0.2",
+    "@astrojs/sitemap": "^1.0.0",
+    "@netlify/netlify-marketing-tokens": "^1.1.0",
+    "astro": "^2.0.0"
   }
 }
